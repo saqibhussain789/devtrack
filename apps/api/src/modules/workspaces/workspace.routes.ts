@@ -11,22 +11,21 @@ import {
   updateWorkspaceMember,
 } from "./workspace.controller";
 
+// Mounted at "/workspaces" in routes/index.ts. Scoping requireAuth to this
+// prefix (rather than a blanket router.use() on a router mounted at "/") keeps
+// it from intercepting requests meant for unrelated, differently-prefixed
+// routers registered alongside it (e.g. the public GitHub webhook receiver).
 const router = Router();
 
 router.use(requireAuth);
 
-router.get("/workspaces", listWorkspaces);
-router.post("/workspaces", validate(createWorkspaceSchema), createWorkspaceHandler);
+router.get("/", listWorkspaces);
+router.post("/", validate(createWorkspaceSchema), createWorkspaceHandler);
 
-router.get("/workspaces/:id/members", requireWorkspaceRole("VIEWER"), listWorkspaceMembers);
-router.post(
-  "/workspaces/:id/invites",
-  requireWorkspaceRole("ADMIN"),
-  validate(inviteMemberSchema),
-  inviteWorkspaceMember
-);
+router.get("/:id/members", requireWorkspaceRole("VIEWER"), listWorkspaceMembers);
+router.post("/:id/invites", requireWorkspaceRole("ADMIN"), validate(inviteMemberSchema), inviteWorkspaceMember);
 router.patch(
-  "/workspaces/:id/members/:memberId",
+  "/:id/members/:memberId",
   requireWorkspaceRole("ADMIN"),
   validate(updateMemberSchema),
   updateWorkspaceMember

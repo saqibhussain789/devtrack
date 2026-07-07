@@ -69,7 +69,15 @@ export async function createProject(userId: string, input: CreateProjectInput) {
 export async function getProjectBoard(projectId: string) {
   const project = await prisma.project.findUniqueOrThrow({
     where: { id: projectId },
-    select: { id: true, name: true, key: true, description: true, status: true, workspaceId: true },
+    select: {
+      id: true,
+      name: true,
+      key: true,
+      description: true,
+      status: true,
+      workspaceId: true,
+      repository: { select: { id: true, owner: true, repo: true, defaultBranch: true } },
+    },
   });
 
   const statuses = await prisma.taskStatus.findMany({

@@ -7,6 +7,7 @@ import { useAuth } from "../../../../lib/auth-context";
 import { computeInsertSortOrder } from "../../../../lib/board-utils";
 import { TaskCard } from "../../../../components/kanban/task-card";
 import { TaskDrawer } from "../../../../components/kanban/task-drawer";
+import { GitHubPanel } from "../../../../components/kanban/github-panel";
 import type { BoardData, StatusColumn, TaskSummary } from "../../../../components/kanban/types";
 
 interface Member {
@@ -17,7 +18,7 @@ interface Member {
 export default function BoardPage() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
-  const { accessToken } = useAuth();
+  const { user, accessToken } = useAuth();
 
   const [board, setBoard] = useState<BoardData | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -185,6 +186,15 @@ export default function BoardPage() {
           </div>
         ))}
       </div>
+
+      {accessToken && (
+        <GitHubPanel
+          project={board.project}
+          role={user?.memberships.find((m) => m.workspace.id === board.project.workspaceId)?.role}
+          accessToken={accessToken}
+          onConnected={loadBoard}
+        />
+      )}
 
       {openTaskId && accessToken && (
         <TaskDrawer

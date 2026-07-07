@@ -3,14 +3,28 @@ import authRoutes from "../modules/auth/auth.routes";
 import workspaceRoutes from "../modules/workspaces/workspace.routes";
 import projectRoutes from "../modules/projects/project.routes";
 import taskRoutes from "../modules/tasks/task.routes";
+import githubRoutes from "../modules/github/github.routes";
+import webhookRoutes from "../modules/github/webhook.routes";
 import healthRoutes from "./health.routes";
 
 const router = Router();
 
+// health and auth apply their own (per-route, where needed) auth checks and
+// have no shared path prefix, so they stay mounted at "/" like before.
 router.use(healthRoutes);
 router.use(authRoutes);
-router.use(workspaceRoutes);
-router.use(projectRoutes);
-router.use(taskRoutes);
+
+// Everything else is mounted at an explicit prefix so each router's blanket
+// `router.use(requireAuth)` only ever sees requests actually meant for it —
+// mounting multiple `router.use(requireAuth)` routers at "/" would otherwise let
+// an earlier router's auth check intercept a later, differently-scoped router's
+// routes (this bit the public GitHub webhook route: workspaceRoutes' requireAuth
+// was rejecting unauthenticated `/webhooks/github` requests before they ever
+// reached webhookRoutes).
+router.use("/workspaces", workspaceRoutes);
+router.use("/projects", projectRoutes);
+router.use("/projects", githubRoutes);
+router.use("/tasks", taskRoutes);
+router.use("/webhooks", webhookRoutes);
 
 export default router;

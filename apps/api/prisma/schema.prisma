@@ -255,16 +255,34 @@ model GitHubRepository {
   connectedBy    String  @map("connected_by")
   webhookSecret  String? @map("webhook_secret")
 
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  connector   User          @relation("RepositoryConnectedBy", fields: [connectedBy], references: [id])
-  projects    Project[]
-  pullRequests PullRequest[]
-  deployments Deployment[]
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  connector     User            @relation("RepositoryConnectedBy", fields: [connectedBy], references: [id])
+  projects      Project[]
+  pullRequests  PullRequest[]
+  deployments   Deployment[]
+  webhookEvents WebhookEvent[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([workspaceId, owner, repo])
   @@map("github_repositories")
+}
+
+model WebhookEvent {
+  id           String    @id @default(uuid())
+  repositoryId String?   @map("repository_id")
+  deliveryId   String    @unique @map("delivery_id")
+  eventType    String    @map("event_type")
+  payload      Json
+  processedAt  DateTime? @map("processed_at")
+  error        String?
+
+  repository GitHubRepository? @relation(fields: [repositoryId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([repositoryId, createdAt])
+  @@map("webhook_events")
 }
 
 model PullRequest {

@@ -4,3 +4,4 @@ export * from "./schemas/auth";
 export * from "./schemas/workspace";
 export * from "./schemas/project";
 export * from "./schemas/task";
+export * from "./schemas/github";
