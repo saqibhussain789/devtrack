@@ -1,0 +1,370 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  DEVELOPER
+  VIEWER
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  REMOVED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TaskCategory {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum PullRequestState {
+  OPEN
+  CLOSED
+  MERGED
+}
+
+enum DeploymentEnvironment {
+  DEV
+  STAGING
+  PROD
+}
+
+enum DeploymentStatus {
+  QUEUED
+  RUNNING
+  SUCCESS
+  FAILED
+  CANCELED
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  name         String
+  passwordHash String?    @map("password_hash")
+  avatarUrl    String?    @map("avatar_url")
+  status       UserStatus @default(ACTIVE)
+
+  refreshTokens      RefreshToken[]
+  workspacesCreated  Workspace[]        @relation("WorkspaceCreatedBy")
+  workspaceMembers   WorkspaceMember[]
+  projectMembers     ProjectMember[]
+  assignedTasks      Task[]             @relation("TaskAssignee")
+  reportedTasks      Task[]             @relation("TaskReporter")
+  taskComments       TaskComment[]
+  connectedRepos     GitHubRepository[] @relation("RepositoryConnectedBy")
+  triggeredDeploys   Deployment[]       @relation("DeploymentTriggeredBy")
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  tokenHash  String    @unique @map("token_hash")
+  userAgent  String?   @map("user_agent")
+  ipAddress  String?   @map("ip_address")
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Workspace {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdBy String   @map("created_by")
+
+  creator      User               @relation("WorkspaceCreatedBy", fields: [createdBy], references: [id])
+  members      WorkspaceMember[]
+  projects     Project[]
+  repositories GitHubRepository[]
+  notifications Notification[]
+  auditLogs    AuditLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String            @id @default(uuid())
+  workspaceId String            @map("workspace_id")
+  userId      String            @map("user_id")
+  role        WorkspaceRole     @default(DEVELOPER)
+  status      MembershipStatus  @default(INVITED)
+  joinedAt    DateTime?         @map("joined_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@map("workspace_members")
+}
+
+model Project {
+  id           String        @id @default(uuid())
+  workspaceId  String        @map("workspace_id")
+  repositoryId String?       @map("repository_id")
+  name         String
+  key          String
+  description  String?
+  status       ProjectStatus @default(ACTIVE)
+
+  workspace    Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  repository   GitHubRepository?  @relation(fields: [repositoryId], references: [id])
+  members      ProjectMember[]
+  statuses     TaskStatus[]
+  tasks        Task[]
+  pullRequests PullRequest[]
+  deployments  Deployment[]
+  metrics      MetricSnapshot[]
+  auditLogs    AuditLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, key])
+  @@index([workspaceId])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String        @id @default(uuid())
+  projectId String        @map("project_id")
+  userId    String        @map("user_id")
+  role      WorkspaceRole @default(DEVELOPER)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([projectId, userId])
+  @@index([userId])
+  @@map("project_members")
+}
+
+model TaskStatus {
+  id        String       @id @default(uuid())
+  projectId String       @map("project_id")
+  name      String
+  category  TaskCategory @default(TODO)
+  sortOrder Int          @map("sort_order")
+  isDefault Boolean      @default(false) @map("is_default")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@index([projectId])
+  @@map("task_statuses")
+}
+
+model Task {
+  id          String       @id @default(uuid())
+  projectId   String       @map("project_id")
+  taskNumber  Int          @map("task_number")
+  title       String
+  description String?
+  statusId    String       @map("status_id")
+  assigneeId  String?      @map("assignee_id")
+  reporterId  String       @map("reporter_id")
+  priority    TaskPriority @default(MEDIUM)
+  storyPoints Int?         @map("story_points")
+  sortOrder   Decimal      @map("sort_order")
+  completedAt DateTime?    @map("completed_at")
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status       TaskStatus    @relation(fields: [statusId], references: [id])
+  assignee     User?         @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  reporter     User          @relation("TaskReporter", fields: [reporterId], references: [id])
+  comments     TaskComment[]
+  pullRequests PullRequest[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([projectId, taskNumber])
+  @@index([projectId, statusId, sortOrder])
+  @@map("tasks")
+}
+
+model TaskComment {
+  id       String @id @default(uuid())
+  taskId   String @map("task_id")
+  authorId String @map("author_id")
+  body     String
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([taskId])
+  @@map("task_comments")
+}
+
+model GitHubRepository {
+  id             String  @id @default(uuid())
+  workspaceId    String  @map("workspace_id")
+  owner          String
+  repo           String
+  installationId BigInt? @map("installation_id")
+  defaultBranch  String  @map("default_branch")
+  connectedBy    String  @map("connected_by")
+  webhookSecret  String? @map("webhook_secret")
+
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  connector   User          @relation("RepositoryConnectedBy", fields: [connectedBy], references: [id])
+  projects    Project[]
+  pullRequests PullRequest[]
+  deployments Deployment[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([workspaceId, owner, repo])
+  @@map("github_repositories")
+}
+
+model PullRequest {
+  id           String            @id @default(uuid())
+  repositoryId String            @map("repository_id")
+  projectId    String            @map("project_id")
+  taskId       String?           @map("task_id")
+  githubPrId   BigInt            @map("github_pr_id")
+  number       Int
+  title        String
+  url          String
+  state        PullRequestState  @default(OPEN)
+  authorLogin  String            @map("author_login")
+  mergedAt     DateTime?         @map("merged_at")
+  syncedAt     DateTime          @default(now()) @map("synced_at")
+
+  repository GitHubRepository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  project    Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task       Task?            @relation(fields: [taskId], references: [id])
+
+  @@unique([repositoryId, githubPrId])
+  @@index([projectId, state])
+  @@map("pull_requests")
+}
+
+model Deployment {
+  id             String                @id @default(uuid())
+  projectId      String                @map("project_id")
+  repositoryId   String?               @map("repository_id")
+  environment    DeploymentEnvironment
+  commitSha      String                @map("commit_sha")
+  imageTag       String?               @map("image_tag")
+  status         DeploymentStatus      @default(QUEUED)
+  triggeredById  String?               @map("triggered_by_id")
+  startedAt      DateTime?             @map("started_at")
+  finishedAt     DateTime?             @map("finished_at")
+  failureReason  String?               @map("failure_reason")
+
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  repository  GitHubRepository? @relation(fields: [repositoryId], references: [id])
+  triggeredBy User?             @relation("DeploymentTriggeredBy", fields: [triggeredById], references: [id])
+
+  @@index([projectId, environment, status])
+  @@map("deployments")
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  workspaceId String    @map("workspace_id")
+  projectId   String?   @map("project_id")
+  type        String
+  title       String
+  message     String
+  metadata    Json      @default("{}")
+  readAt      DateTime? @map("read_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+model MetricSnapshot {
+  id                String   @id @default(uuid())
+  projectId         String   @map("project_id")
+  periodStart       DateTime @map("period_start") @db.Date
+  periodEnd         DateTime @map("period_end") @db.Date
+  velocityPoints    Int      @default(0) @map("velocity_points")
+  openPrCount       Int      @default(0) @map("open_pr_count")
+  deployFrequency   Decimal  @default(0) @map("deploy_frequency")
+  leadTimeHours     Decimal? @map("lead_time_hours")
+  changeFailureRate Decimal? @map("change_failure_rate")
+  mttrHours         Decimal? @map("mttr_hours")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, periodStart])
+  @@map("metric_snapshots")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  workspaceId String?  @map("workspace_id")
+  projectId   String?  @map("project_id")
+  actorId     String?  @map("actor_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String?  @map("entity_id")
+  metadata    Json     @default("{}")
+
+  workspace Workspace? @relation(fields: [workspaceId], references: [id])
+  project   Project?   @relation(fields: [projectId], references: [id])
+  actor     User?      @relation(fields: [actorId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([workspaceId, createdAt])
+  @@map("audit_logs")
+}

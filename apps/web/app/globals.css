@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/*
+ * DevTrack brand palette — 3 colors used consistently across the app:
+ *   1. primary (blue)  — actions, links, active nav, focus states
+ *   2. neutral (stone)  — Tailwind's built-in warm-gray scale for text/surfaces/borders
+ *   3. accent  (green) — success / active / positive states, secondary highlights
+ * Warning (amber) and critical (red) are semantic-only status colors — reused from
+ * Tailwind's defaults, never used for branding, so status never impersonates identity.
+ * Values are validated for contrast/colorblind-safety (see dataviz skill palette.md).
+ */
+@theme {
+  --color-primary-50: #eaf2fc;
+  --color-primary-100: #cde2fb;
+  --color-primary-200: #9ec5f4;
+  --color-primary-300: #6da7ec;
+  --color-primary-400: #3987e5;
+  --color-primary-500: #2a78d6;
+  --color-primary-600: #1c5cab;
+  --color-primary-700: #184f95;
+  --color-primary-800: #104281;
+  --color-primary-900: #0d366b;
+
+  --color-accent-50: #e7f5e7;
+  --color-accent-100: #cfedcf;
+  --color-accent-500: #0ca30c;
+  --color-accent-600: #0a8a0a;
+  --color-accent-700: #087208;
+}
+
+body {
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
