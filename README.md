@@ -1,9 +1,9 @@
 # DevTrack
 
 DevTrack is a developer productivity platform: Kanban task boards, GitHub pull request
-tracking, deployment logging, and (coming soon) delivery metrics — all in one dashboard. It's
-built as a real, deployable full-stack app. The full product spec, ERD, and phase roadmap live
-in `DevTrack_Implementation_Document.pdf`.
+tracking, deployment logging, realtime notifications, and delivery metrics — all in one
+dashboard. It's built as a real, deployable full-stack app. The full product spec, ERD, and
+phase roadmap live in `DevTrack_Implementation_Document.pdf`.
 
 ## Project status
 
@@ -16,7 +16,7 @@ Built phase-by-phase against the implementation doc's roadmap:
 | 3 | Kanban board — projects, tasks, drag-and-drop, comments | ✅ Done |
 | 4 | GitHub integration — repo connect, signed webhooks, PR sync, task linking | ✅ Done |
 | 5 | Deployment log — CI-reported deployment status, manual logging | ✅ Done |
-| 6 | Realtime notifications (Socket.IO), metrics dashboard, GitHub OAuth login | ⏳ Not started |
+| 6 | Realtime notifications (Socket.IO), metrics dashboard, GitHub OAuth login | ✅ Done |
 | 7 | Hardening & launch (security pass, prod config) | ⏳ Not started |
 
 ## Feature overview (what's implemented today)
@@ -35,11 +35,19 @@ Built phase-by-phase against the implementation doc's roadmap:
 - **Deployment log**: generate a CI token per project, have your pipeline report
   queued/running/success/failed deployment status per environment (dev/staging/prod), or log a
   manual deployment from the dashboard.
+- **Realtime notifications**: a Socket.IO connection pushes task assignments, PR
+  opened/merged, and deployment failures to the browser the instant they happen, backed by a
+  persistent notification inbox (bell icon in the dashboard header).
+- **Metrics dashboard**: per-project velocity, open PR count, deploy frequency, change failure
+  rate, mean time to recovery, and average deploy duration over a trailing window, plus a
+  6-week velocity trend chart.
+- **GitHub OAuth login**: "Continue with GitHub" on login/register, in addition to
+  email/password.
 
 ## Stack
 
 - `apps/web` — Next.js 16 (App Router), React 19, Tailwind CSS v4
-- `apps/api` — Express 5 REST API, Prisma ORM 7 (`@prisma/adapter-pg` driver adapter), PostgreSQL 18
+- `apps/api` — Express 5 REST API, Prisma ORM 7 (`@prisma/adapter-pg` driver adapter), PostgreSQL 18, Socket.IO
 - `packages/shared` — Zod schemas and TypeScript types shared by both apps
 - Turborepo + npm workspaces for the monorepo
 - Vitest + Supertest for API tests
@@ -170,6 +178,10 @@ needed:
 | `JWT_REFRESH_SECRET` | Signs refresh-token hashing — same requirement | *(placeholder, must be changed)* |
 | `COOKIE_DOMAIN` | Domain the refresh-token cookie is scoped to | unset (fine for localhost) |
 | `CORS_ORIGIN` | Origin allowed to call the API with credentials | `http://localhost:3000` |
+| `FRONTEND_URL` | Where the browser is redirected after GitHub OAuth login | `http://localhost:3000` |
+| `GITHUB_OAUTH_CLIENT_ID` | GitHub OAuth App client ID (optional — hides "Continue with GitHub" if unset) | unset |
+| `GITHUB_OAUTH_CLIENT_SECRET` | GitHub OAuth App client secret | unset |
+| `GITHUB_OAUTH_CALLBACK_URL` | Must match the OAuth App's callback URL exactly | `http://localhost:4000/api/v1/auth/github/callback` |
 
 Generate a strong random secret for the JWT variables, for example:
 
@@ -198,8 +210,8 @@ NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
 - Registering creates the user and a default workspace (`OWNER` role). Workspace invites for an
   email with no account yet create an `INVITED` user stub; registering with that email later
   "claims" the stub and activates their pending memberships instead of creating a second
-  default workspace.
-- GitHub OAuth login is deferred to Phase 6, alongside GitHub App integration.
+  default workspace. Logging in via GitHub with a matching email does the same claim/link.
+- GitHub OAuth accounts never get a `passwordHash` — they can only sign in via GitHub.
 
 ## RBAC
 
@@ -235,6 +247,47 @@ name or title.
    Valid `status` values: `QUEUED`, `RUNNING`, `SUCCESS`, `FAILED`, `CANCELED`. Repeated calls
    for the same commit + environment update one deployment record through its lifecycle;
    reporting again after a terminal status starts a new record (a redeploy).
+
+## Realtime notifications
+
+The dashboard opens a Socket.IO connection authenticated with the same access token used for
+REST calls. You're notified live (and it's saved to your notification inbox — the bell icon in
+the header) when:
+
+- you're assigned a task,
+- a pull request linked to one of your tasks is opened or merged,
+- a CI-reported deployment fails (sent to workspace `OWNER`/`ADMIN` members, since a CI pipeline
+  has no specific user to notify).
+
+No setup required — it works out of the box in dev and only needs `CORS_ORIGIN` to match your
+frontend's origin in other environments.
+
+## Metrics dashboard
+
+Each project has a "View metrics →" link on its board page showing, over a trailing 30-day
+window: velocity (story points completed), open PR count, deploy frequency, change failure
+rate, mean time to recovery, and average deploy duration, plus a 6-week velocity trend chart.
+Numbers are computed on request and cached in the `metric_snapshots` table.
+
+Two of these are pragmatic approximations given what the schema tracks — no incident model and
+no commit-authored timestamp exist to compute the strict DORA definitions:
+
+- **Avg. deploy duration** stands in for DORA "lead time for changes" (commit authored → live),
+  measuring deployment pipeline duration (queued → finished) instead.
+- **MTTR** is the time from a failed deployment to the next successful deployment of the *same
+  environment*, rather than time-to-resolve a tracked incident.
+
+## GitHub OAuth login
+
+Optional — the "Continue with GitHub" button is hidden automatically until configured.
+
+1. Go to https://github.com/settings/developers → **New OAuth App**.
+2. Homepage URL: `http://localhost:3000`. Authorization callback URL: must exactly match
+   `GITHUB_OAUTH_CALLBACK_URL` (default `http://localhost:4000/api/v1/auth/github/callback`).
+   GitHub OAuth Apps allow `localhost` callback URLs, so no tunnel is needed for this (unlike
+   the GitHub webhook receiver above).
+3. Copy the generated Client ID and Client Secret into `apps/api/.env` as
+   `GITHUB_OAUTH_CLIENT_ID` and `GITHUB_OAUTH_CLIENT_SECRET`, then restart the API.
 
 ## Scripts
 
@@ -274,17 +327,18 @@ cd ../.. && npm test
 apps/
   api/                Express API
     src/
-      modules/         one folder per domain: auth, workspaces, projects, tasks, github, deployments, ...
+      modules/         one folder per domain: auth, workspaces, projects, tasks, github, deployments, notifications, metrics, ...
       middleware/       auth, RBAC, validation, error handling
       routes/           route aggregator mounted at /api/v1
+      sockets/          Socket.IO server setup (auth handshake, per-user rooms)
       tests/            Vitest + Supertest suites
     prisma/
       schema.prisma     full data model
       migrations/
   web/                Next.js dashboard
-    app/               App Router pages (auth, dashboard, projects)
-    components/        Kanban board, GitHub panel, deployments panel, etc.
-    lib/                API client, auth context
+    app/               App Router pages (auth, dashboard, projects, project metrics)
+    components/        Kanban board, GitHub panel, deployments panel, notification bell, metrics tiles/chart
+    lib/                API client, auth context, socket client, notifications context
 packages/
   shared/               Zod schemas + TS types shared by both apps
 ```

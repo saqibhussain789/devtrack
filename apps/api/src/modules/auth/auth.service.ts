@@ -8,18 +8,18 @@ import type { RegisterInput, LoginInput } from "@repo/shared";
 
 const BCRYPT_ROUNDS = 12;
 
-interface RequestContext {
+export interface RequestContext {
   userAgent?: string;
   ipAddress?: string;
 }
 
-interface AuthResult {
+export interface AuthResult {
   accessToken: string;
   refreshToken: string;
   user: { id: string; email: string; name: string };
 }
 
-async function createSession(userId: string, email: string, name: string, ctx: RequestContext): Promise<AuthResult> {
+export async function createSession(userId: string, email: string, name: string, ctx: RequestContext): Promise<AuthResult> {
   const accessToken = await signAccessToken({ sub: userId, email });
   const refresh = createRefreshToken();
 

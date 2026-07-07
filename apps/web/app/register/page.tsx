@@ -7,6 +7,7 @@ import { ApiError } from "../../lib/api";
 import { useAuth } from "../../lib/auth-context";
 import { Brand } from "../../components/brand";
 import { FormField } from "../../components/form-field";
+import { GithubOAuthButton } from "../../components/github-oauth-button";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -68,6 +69,8 @@ export default function RegisterPage() {
         >
           {submitting ? "Creating account…" : "Create account"}
         </button>
+
+        <GithubOAuthButton />
 
         <p className="text-center text-sm text-stone-500 dark:text-stone-400">
           Already have an account?{" "}

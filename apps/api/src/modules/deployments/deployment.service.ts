@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/app-error";
 import { generateOpaqueToken, hashToken } from "../../utils/crypto";
 import { recordAuditEvent } from "../audit/audit.service";
+import { createNotification } from "../notifications/notification.service";
 
 const IN_PROGRESS_STATUSES = ["QUEUED", "RUNNING"] as const;
 const TERMINAL_STATUSES = new Set(["SUCCESS", "FAILED", "CANCELED"]);
@@ -66,7 +67,7 @@ export async function reportDeployment(projectId: string, token: string | undefi
 
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    select: { id: true, deployTokenHash: true, repositoryId: true },
+    select: { id: true, deployTokenHash: true, repositoryId: true, workspaceId: true, key: true },
   });
 
   if (!project?.deployTokenHash || hashToken(token) !== project.deployTokenHash) {
@@ -120,6 +121,29 @@ export async function reportDeployment(projectId: string, token: string | undefi
     projectId,
     metadata: { environment: input.environment, commitSha: input.commitSha, status: input.status },
   });
+
+  // CI-reported deployments have no user to notify directly, so a failure alerts
+  // everyone who can act on it — workspace admins and owners — rather than no one.
+  if (input.status === "FAILED") {
+    const admins = await prisma.workspaceMember.findMany({
+      where: { workspaceId: project.workspaceId, status: "ACTIVE", role: { in: ["OWNER", "ADMIN"] } },
+      select: { userId: true },
+    });
+
+    await Promise.all(
+      admins.map((admin) =>
+        createNotification({
+          userId: admin.userId,
+          workspaceId: project.workspaceId,
+          projectId,
+          type: "deployment.failed",
+          title: "Deployment failed",
+          message: `${project.key} · ${input.environment} · ${input.commitSha.slice(0, 10)}${input.failureReason ? ` — ${input.failureReason}` : ""}`,
+          metadata: { deploymentId: deployment.id, environment: input.environment },
+        })
+      )
+    );
+  }
 
   return deployment;
 }
