@@ -8,7 +8,7 @@ import { Brand } from "../../components/brand";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", enabled: true },
-  { href: "/dashboard/projects", label: "Projects", enabled: false },
+  { href: "/dashboard/projects", label: "Projects", enabled: true },
   { href: "/dashboard/deployments", label: "Deployments", enabled: false },
   { href: "/dashboard/settings", label: "Settings", enabled: false },
 ];
@@ -44,7 +44,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <nav className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => {
-            const active = pathname === item.href;
+            const active =
+              pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
             return (
               <Link
                 key={item.href}
