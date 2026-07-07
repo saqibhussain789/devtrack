@@ -21,7 +21,14 @@ export function validate(schema: ZodType, target: ValidationTarget = "body") {
       );
     }
 
-    req[target] = result.data;
+    if (target === "query") {
+      // Express 5 exposes req.query as a getter-only property, so the parsed
+      // (coerced/defaulted) result must be merged in rather than reassigned.
+      Object.assign(req.query, result.data);
+    } else {
+      req[target] = result.data;
+    }
+
     next();
   };
 }
