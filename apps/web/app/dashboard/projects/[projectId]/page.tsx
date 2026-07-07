@@ -8,6 +8,7 @@ import { computeInsertSortOrder } from "../../../../lib/board-utils";
 import { TaskCard } from "../../../../components/kanban/task-card";
 import { TaskDrawer } from "../../../../components/kanban/task-drawer";
 import { GitHubPanel } from "../../../../components/kanban/github-panel";
+import { DeploymentsPanel } from "../../../../components/kanban/deployments-panel";
 import type { BoardData, StatusColumn, TaskSummary } from "../../../../components/kanban/types";
 
 interface Member {
@@ -193,6 +194,14 @@ export default function BoardPage() {
           role={user?.memberships.find((m) => m.workspace.id === board.project.workspaceId)?.role}
           accessToken={accessToken}
           onConnected={loadBoard}
+        />
+      )}
+
+      {accessToken && (
+        <DeploymentsPanel
+          projectId={board.project.id}
+          role={user?.memberships.find((m) => m.workspace.id === board.project.workspaceId)?.role}
+          accessToken={accessToken}
         />
       )}
 
