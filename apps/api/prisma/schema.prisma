@@ -151,6 +151,7 @@ model Project {
   key          String
   description  String?
   status       ProjectStatus @default(ACTIVE)
+  deployTokenHash String?    @map("deploy_token_hash")
 
   workspace    Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   repository   GitHubRepository?  @relation(fields: [repositoryId], references: [id])
@@ -320,12 +321,14 @@ model Deployment {
   startedAt      DateTime?             @map("started_at")
   finishedAt     DateTime?             @map("finished_at")
   failureReason  String?               @map("failure_reason")
+  createdAt      DateTime              @default(now()) @map("created_at")
 
   project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   repository  GitHubRepository? @relation(fields: [repositoryId], references: [id])
   triggeredBy User?             @relation("DeploymentTriggeredBy", fields: [triggeredById], references: [id])
 
   @@index([projectId, environment, status])
+  @@index([projectId, environment, commitSha])
   @@map("deployments")
 }
 

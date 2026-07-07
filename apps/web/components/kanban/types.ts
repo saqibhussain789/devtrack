@@ -52,6 +52,22 @@ export interface PullRequestSummary {
   task: { id: string; taskNumber: number; title: string } | null;
 }
 
+export type DeploymentEnvironment = "DEV" | "STAGING" | "PROD";
+export type DeploymentStatus = "QUEUED" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELED";
+
+export interface DeploymentSummary {
+  id: string;
+  environment: DeploymentEnvironment;
+  commitSha: string;
+  imageTag: string | null;
+  status: DeploymentStatus;
+  startedAt: string | null;
+  finishedAt: string | null;
+  failureReason: string | null;
+  createdAt: string;
+  triggeredBy: { id: string; name: string; email: string } | null;
+}
+
 export interface TaskComment {
   id: string;
   body: string;
