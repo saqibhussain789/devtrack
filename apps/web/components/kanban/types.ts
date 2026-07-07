@@ -20,6 +20,13 @@ export interface StatusColumn {
   tasks: TaskSummary[];
 }
 
+export interface ConnectedRepository {
+  id: string;
+  owner: string;
+  repo: string;
+  defaultBranch: string;
+}
+
 export interface BoardData {
   project: {
     id: string;
@@ -28,8 +35,21 @@ export interface BoardData {
     description: string | null;
     status: string;
     workspaceId: string;
+    repository: ConnectedRepository | null;
   };
   statuses: StatusColumn[];
+}
+
+export interface PullRequestSummary {
+  id: string;
+  number: number;
+  title: string;
+  url: string;
+  state: "OPEN" | "CLOSED" | "MERGED";
+  authorLogin: string;
+  mergedAt: string | null;
+  syncedAt: string;
+  task: { id: string; taskNumber: number; title: string } | null;
 }
 
 export interface TaskComment {
