@@ -2,6 +2,7 @@ import type { CreateCommentInput, CreateTaskInput, MoveTaskInput, UpdateTaskInpu
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/app-error";
 import { recordAuditEvent } from "../audit/audit.service";
+import { createNotification } from "../notifications/notification.service";
 
 const TASK_DETAIL_SELECT = {
   id: true,
@@ -28,6 +29,26 @@ const TASK_DETAIL_SELECT = {
     },
   },
 } as const;
+
+/** Notifies the assignee, unless they're the one who just made the assignment. */
+async function notifyAssignment(assigneeId: string | null, actorId: string, projectId: string, task: { id: string; taskNumber: number; title: string }) {
+  if (!assigneeId || assigneeId === actorId) return;
+
+  const project = await prisma.project.findUniqueOrThrow({
+    where: { id: projectId },
+    select: { key: true, workspaceId: true },
+  });
+
+  await createNotification({
+    userId: assigneeId,
+    workspaceId: project.workspaceId,
+    projectId,
+    type: "task.assigned",
+    title: "You were assigned a task",
+    message: `${project.key}-${task.taskNumber}: ${task.title}`,
+    metadata: { taskId: task.id },
+  });
+}
 
 export async function createTask(projectId: string, reporterId: string, input: CreateTaskInput) {
   const defaultStatus = await prisma.taskStatus.findFirst({ where: { projectId, isDefault: true } });
@@ -67,6 +88,8 @@ export async function createTask(projectId: string, reporterId: string, input: C
     projectId,
   });
 
+  await notifyAssignment(task.assignee?.id ?? null, reporterId, projectId, task);
+
   return task;
 }
 
@@ -75,6 +98,8 @@ export async function getTask(taskId: string) {
 }
 
 export async function updateTask(taskId: string, actorId: string, input: UpdateTaskInput) {
+  const previous = await prisma.task.findUniqueOrThrow({ where: { id: taskId }, select: { assigneeId: true } });
+
   const task = await prisma.task.update({
     where: { id: taskId },
     data: {
@@ -95,6 +120,10 @@ export async function updateTask(taskId: string, actorId: string, input: UpdateT
     projectId: task.projectId,
     metadata: input,
   });
+
+  if (input.assigneeId !== undefined && input.assigneeId !== previous.assigneeId) {
+    await notifyAssignment(task.assignee?.id ?? null, actorId, task.projectId, task);
+  }
 
   return task;
 }

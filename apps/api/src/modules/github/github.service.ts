@@ -3,6 +3,7 @@ import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/app-error";
 import { generateWebhookSecret, verifyGithubSignature } from "../../utils/crypto";
 import { recordAuditEvent } from "../audit/audit.service";
+import { createNotification } from "../notifications/notification.service";
 
 const PROCESSED_PR_ACTIONS = new Set(["opened", "edited", "synchronize", "closed", "reopened"]);
 const TASK_KEY_PATTERN = /\b([A-Za-z][A-Za-z0-9]{1,11})-(\d+)\b/g;
@@ -189,7 +190,7 @@ async function processPullRequestEvent(repositoryId: string, payload: GithubPull
 
   const projects = await prisma.project.findMany({
     where: { repositoryId },
-    select: { id: true, key: true },
+    select: { id: true, key: true, workspaceId: true },
   });
 
   if (projects.length === 0) {
@@ -206,7 +207,7 @@ async function processPullRequestEvent(repositoryId: string, payload: GithubPull
   const task = parsed
     ? await prisma.task.findUnique({
         where: { projectId_taskNumber: { projectId: targetProject.id, taskNumber: parsed.taskNumber } },
-        select: { id: true },
+        select: { id: true, taskNumber: true, assigneeId: true, reporterId: true },
       })
     : null;
 
@@ -240,4 +241,22 @@ async function processPullRequestEvent(repositoryId: string, payload: GithubPull
     projectId: targetProject.id,
     metadata: { number: pr.number, state, taskId: task?.id },
   });
+
+  // Only "opened" and "merged" are worth a realtime nudge — every intermediate
+  // sync (synchronize, edited) would otherwise spam the linked task's people.
+  if (task && (state === "OPEN" || state === "MERGED")) {
+    const recipientId = task.assigneeId ?? task.reporterId;
+
+    if (recipientId) {
+      await createNotification({
+        userId: recipientId,
+        workspaceId: targetProject.workspaceId,
+        projectId: targetProject.id,
+        type: `github.pull_request_${state.toLowerCase()}`,
+        title: state === "MERGED" ? "Pull request merged" : "Pull request opened",
+        message: `#${pr.number} ${pr.title} (${targetProject.key}-${task.taskNumber})`,
+        metadata: { taskId: task.id, pullRequestNumber: pr.number, url: pr.html_url },
+      });
+    }
+  }
 }

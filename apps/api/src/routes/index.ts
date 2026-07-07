@@ -7,6 +7,8 @@ import githubRoutes from "../modules/github/github.routes";
 import webhookRoutes from "../modules/github/webhook.routes";
 import deploymentRoutes from "../modules/deployments/deployment.routes";
 import deploymentReportRoutes from "../modules/deployments/deployment-report.routes";
+import notificationRoutes from "../modules/notifications/notification.routes";
+import metricsRoutes from "../modules/metrics/metrics.routes";
 import healthRoutes from "./health.routes";
 
 const router = Router();
@@ -27,8 +29,10 @@ router.use("/workspaces", workspaceRoutes);
 router.use("/projects", projectRoutes);
 router.use("/projects", githubRoutes);
 router.use("/projects", deploymentRoutes);
+router.use("/projects", metricsRoutes);
 router.use("/tasks", taskRoutes);
 router.use("/webhooks", webhookRoutes);
 router.use("/deploy", deploymentReportRoutes);
+router.use("/notifications", notificationRoutes);
 
 export default router;

@@ -1,12 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ApiError } from "../../lib/api";
 import { useAuth } from "../../lib/auth-context";
 import { Brand } from "../../components/brand";
 import { FormField } from "../../components/form-field";
+import { GithubOAuthButton } from "../../components/github-oauth-button";
+
+function GithubOAuthError() {
+  const searchParams = useSearchParams();
+  if (searchParams.get("error") !== "github_oauth_failed") return null;
+  return <p className="text-sm text-red-600 dark:text-red-400">GitHub sign-in failed. Please try again.</p>;
+}
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -44,6 +51,10 @@ export default function LoginPage() {
           <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Welcome back.</p>
         </div>
 
+        <Suspense fallback={null}>
+          <GithubOAuthError />
+        </Suspense>
+
         <FormField id="email" label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />
         <FormField
           id="password"
@@ -63,6 +74,8 @@ export default function LoginPage() {
         >
           {submitting ? "Logging in…" : "Log in"}
         </button>
+
+        <GithubOAuthButton />
 
         <p className="text-center text-sm text-stone-500 dark:text-stone-400">
           No account?{" "}

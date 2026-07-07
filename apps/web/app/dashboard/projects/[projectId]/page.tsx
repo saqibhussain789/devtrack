@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState, type DragEvent, type FormEvent } from "react";
 import { apiFetch, ApiError } from "../../../../lib/api";
@@ -133,16 +134,25 @@ export default function BoardPage() {
 
   return (
     <div className="flex h-full flex-col gap-6">
-      <div>
-        <div className="flex items-center gap-2">
-          <span className="inline-flex rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700 dark:bg-primary-500/15 dark:text-primary-100">
-            {board.project.key}
-          </span>
-          <h1 className="text-xl font-semibold text-stone-900 dark:text-stone-100">{board.project.name}</h1>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700 dark:bg-primary-500/15 dark:text-primary-100">
+              {board.project.key}
+            </span>
+            <h1 className="text-xl font-semibold text-stone-900 dark:text-stone-100">{board.project.name}</h1>
+          </div>
+          {board.project.description && (
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{board.project.description}</p>
+          )}
         </div>
-        {board.project.description && (
-          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{board.project.description}</p>
-        )}
+
+        <Link
+          href={`/dashboard/projects/${board.project.id}/metrics`}
+          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+        >
+          View metrics →
+        </Link>
       </div>
 
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}

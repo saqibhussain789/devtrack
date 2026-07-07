@@ -70,6 +70,7 @@ model User {
   name         String
   passwordHash String?    @map("password_hash")
   avatarUrl    String?    @map("avatar_url")
+  githubId     String?    @unique @map("github_id")
   status       UserStatus @default(ACTIVE)
 
   refreshTokens      RefreshToken[]
@@ -366,6 +367,7 @@ model MetricSnapshot {
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  @@unique([projectId, periodStart, periodEnd])
   @@index([projectId, periodStart])
   @@map("metric_snapshots")
 }
