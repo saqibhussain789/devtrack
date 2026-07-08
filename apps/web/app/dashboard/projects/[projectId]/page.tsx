@@ -10,6 +10,7 @@ import { TaskCard } from "../../../../components/kanban/task-card";
 import { TaskDrawer } from "../../../../components/kanban/task-drawer";
 import { GitHubPanel } from "../../../../components/kanban/github-panel";
 import { DeploymentsPanel } from "../../../../components/kanban/deployments-panel";
+import { AtRiskPanel } from "../../../../components/kanban/at-risk-panel";
 import { StatusDot } from "../../../../components/status-dot";
 import type { BoardData, StatusColumn, TaskSummary } from "../../../../components/kanban/types";
 
@@ -207,6 +208,10 @@ export default function BoardPage() {
           </div>
         ))}
       </div>
+
+      {accessToken && (
+        <AtRiskPanel projectId={board.project.id} projectKey={board.project.key} accessToken={accessToken} />
+      )}
 
       {accessToken && (
         <GitHubPanel

@@ -68,6 +68,29 @@ export interface DeploymentSummary {
   triggeredBy: { id: string; name: string; email: string } | null;
 }
 
+export interface StalePullRequest {
+  id: string;
+  number: number;
+  title: string;
+  url: string;
+  authorLogin: string;
+  syncedAt: string;
+  idleDays: number;
+  taskId: string | null;
+}
+
+export interface AtRiskDoneTask {
+  id: string;
+  taskNumber: number;
+  title: string;
+  completedAt: string | null;
+}
+
+export interface AtRiskData {
+  stalePrs: StalePullRequest[];
+  doneWithoutMergedPr: AtRiskDoneTask[];
+}
+
 export interface TaskComment {
   id: string;
   body: string;
