@@ -26,19 +26,19 @@ export function TaskCard({
         onDropBefore(e);
       }}
       onClick={onOpen}
-      className="flex w-full flex-col gap-2 rounded-lg border border-stone-200 bg-white p-3 text-left shadow-sm transition-colors hover:border-primary-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-primary-700"
+      className="flex w-full flex-col gap-2 rounded-lg border border-border bg-surface p-3 text-left shadow-sm transition-colors hover:border-brand/60"
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="text-xs font-medium text-stone-400">
+        <span className="text-xs font-medium text-ink-muted">
           {projectKey}-{task.taskNumber}
         </span>
         <PriorityBadge priority={task.priority} />
       </div>
-      <p className="text-sm font-medium text-stone-900 dark:text-stone-100">{task.title}</p>
-      <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
+      <p className="text-sm font-medium text-ink">{task.title}</p>
+      <div className="flex items-center justify-between text-xs text-ink-muted">
         <span>{task.assignee ? task.assignee.name : "Unassigned"}</span>
         {task.storyPoints !== null && (
-          <span className="rounded bg-stone-100 px-1.5 py-0.5 font-medium dark:bg-stone-800">
+          <span className="rounded bg-border/50 px-1.5 py-0.5 font-medium text-ink">
             {task.storyPoints} pts
           </span>
         )}

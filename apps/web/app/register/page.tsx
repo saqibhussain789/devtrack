@@ -8,6 +8,7 @@ import { useAuth } from "../../lib/auth-context";
 import { Brand } from "../../components/brand";
 import { FormField } from "../../components/form-field";
 import { GithubOAuthButton } from "../../components/github-oauth-button";
+import { ThemeToggle } from "../../components/theme-toggle";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -34,16 +35,20 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
+    <main className="relative flex min-h-screen items-center justify-center p-6">
+      <div className="absolute right-6 top-6">
+        <ThemeToggle />
+      </div>
+
       <form
         onSubmit={handleSubmit}
-        className="flex w-full max-w-sm flex-col gap-5 rounded-2xl border border-stone-200 bg-white p-8 dark:border-stone-800 dark:bg-stone-900"
+        className="flex w-full max-w-sm flex-col gap-5 rounded-2xl border border-border bg-surface p-8"
       >
         <Brand />
 
         <div>
-          <h1 className="text-xl font-semibold text-stone-900 dark:text-stone-100">Create your account</h1>
-          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+          <h1 className="text-xl font-semibold text-ink">Create your account</h1>
+          <p className="mt-1 text-sm text-ink-muted">
             You&apos;ll get a workspace of your own to start.
           </p>
         </div>
@@ -60,21 +65,21 @@ export default function RegisterPage() {
           minLength={8}
         />
 
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {error && <p className="text-sm text-status-blocked">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? "Creating account…" : "Create account"}
         </button>
 
         <GithubOAuthButton />
 
-        <p className="text-center text-sm text-stone-500 dark:text-stone-400">
+        <p className="text-center text-sm text-ink-muted">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400">
+          <Link href="/login" className="font-medium text-brand hover:text-brand/80">
             Log in
           </Link>
         </p>

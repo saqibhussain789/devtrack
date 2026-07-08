@@ -1,31 +1,88 @@
 @import "tailwindcss";
 
 /*
- * DevTrack brand palette — 3 colors used consistently across the app:
- *   1. primary (blue)  — actions, links, active nav, focus states
- *   2. neutral (stone)  — Tailwind's built-in warm-gray scale for text/surfaces/borders
- *   3. accent  (green) — success / active / positive states, secondary highlights
- * Warning (amber) and critical (red) are semantic-only status colors — reused from
- * Tailwind's defaults, never used for branding, so status never impersonates identity.
- * Values are validated for contrast/colorblind-safety (see dataviz skill palette.md).
+ * DevTrack design tokens — enterprise/Jira-Linear style theme.
+ *
+ * These are real CSS custom properties (not just compile-time Tailwind
+ * values), redefined inside the dark-mode media query below. Every utility
+ * generated from `@theme` (bg-canvas, text-ink, border-border, ...)
+ * references `var(--color-*)`, so a component written once with e.g.
+ * `bg-surface text-ink` automatically renders correctly in both color
+ * schemes — no `dark:` variant needed anywhere in component code.
+ *
+ * Status colors (todo/progress/done/blocked) are used as small dot
+ * indicators + neutral text in badges, not as colored text on tinted
+ * backgrounds — two of these hues (sky/green) sit just under strict WCAG
+ * AA contrast (4.5:1) for small colored text on light backgrounds, while
+ * comfortably passing the 3:1 threshold WCAG applies to icons/graphical
+ * indicators. The dot pattern keeps the exact requested hues while keeping
+ * every label fully accessible.
+ *
+ * Theme resolution order (lowest to highest precedence — precedence here
+ * comes from CSS specificity, `:root[data-theme]` beats a bare `:root`
+ * regardless of source order or which `@media` block it's in):
+ *   1. `@theme` below — the light-mode default.
+ *   2. `prefers-color-scheme: dark` — OS-level preference, no user choice yet.
+ *   3. `[data-theme="dark"]` / `[data-theme="light"]` — explicit choice made
+ *      via the ThemeToggle button, stored in localStorage and applied to
+ *      <html> by the inline script in app/layout.tsx before first paint.
  */
 @theme {
-  --color-primary-50: #eaf2fc;
-  --color-primary-100: #cde2fb;
-  --color-primary-200: #9ec5f4;
-  --color-primary-300: #6da7ec;
-  --color-primary-400: #3987e5;
-  --color-primary-500: #2a78d6;
-  --color-primary-600: #1c5cab;
-  --color-primary-700: #184f95;
-  --color-primary-800: #104281;
-  --color-primary-900: #0d366b;
+  --color-canvas: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-ink: #0f172a;
+  --color-ink-muted: #475569;
+  --color-brand: #2563eb;
 
-  --color-accent-50: #e7f5e7;
-  --color-accent-100: #cfedcf;
-  --color-accent-500: #0ca30c;
-  --color-accent-600: #0a8a0a;
-  --color-accent-700: #087208;
+  --color-status-todo: #64748b;
+  --color-status-progress: #0284c7;
+  --color-status-done: #16a34a;
+  --color-status-blocked: #dc2626;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-canvas: #09090b;
+    --color-surface: #18181b;
+    --color-border: #27272a;
+    --color-ink: #f4f4f5;
+    --color-ink-muted: #a1a1aa;
+    --color-brand: #3b82f6;
+
+    --color-status-todo: #71717a;
+    --color-status-progress: #38bdf8;
+    --color-status-done: #4ade80;
+    --color-status-blocked: #f87171;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-canvas: #09090b;
+  --color-surface: #18181b;
+  --color-border: #27272a;
+  --color-ink: #f4f4f5;
+  --color-ink-muted: #a1a1aa;
+  --color-brand: #3b82f6;
+
+  --color-status-todo: #71717a;
+  --color-status-progress: #38bdf8;
+  --color-status-done: #4ade80;
+  --color-status-blocked: #f87171;
+}
+
+:root[data-theme="light"] {
+  --color-canvas: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-ink: #0f172a;
+  --color-ink-muted: #475569;
+  --color-brand: #2563eb;
+
+  --color-status-todo: #64748b;
+  --color-status-progress: #0284c7;
+  --color-status-done: #16a34a;
+  --color-status-blocked: #dc2626;
 }
 
 body {

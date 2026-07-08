@@ -1,12 +1,18 @@
-const STATE_CLASSES: Record<string, string> = {
-  OPEN: "bg-accent-100 text-accent-700 dark:bg-accent-500/15 dark:text-accent-100",
-  MERGED: "bg-primary-100 text-primary-700 dark:bg-primary-500/15 dark:text-primary-100",
-  CLOSED: "bg-stone-200 text-stone-600 dark:bg-stone-800 dark:text-stone-300",
+import { StatusDot } from "../status-dot";
+
+// Deliberately follows the app's own status language (blue = in flight, green
+// = landed, red = didn't land) rather than GitHub's own OPEN/MERGED/CLOSED
+// colors, so a PR badge reads the same way as a task or deployment badge.
+const STATE_DOT: Record<string, string> = {
+  OPEN: "bg-status-progress",
+  MERGED: "bg-status-done",
+  CLOSED: "bg-status-blocked",
 };
 
 export function PrStateBadge({ state }: { state: string }) {
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${STATE_CLASSES[state] ?? ""}`}>
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-border/40 px-2 py-0.5 text-[11px] font-medium text-ink">
+      <StatusDot colorClassName={STATE_DOT[state] ?? "bg-status-todo"} />
       {state}
     </span>
   );

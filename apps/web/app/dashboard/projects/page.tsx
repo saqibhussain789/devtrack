@@ -73,42 +73,42 @@ export default function ProjectsPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-100">Projects</h1>
-        <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+        <h1 className="text-2xl font-semibold text-ink">Projects</h1>
+        <p className="mt-1 text-sm text-ink-muted">
           Each project gets a Kanban board with To Do, In Progress, and Done lanes.
         </p>
       </div>
 
-      {loadError && <p className="text-sm text-red-600 dark:text-red-400">{loadError}</p>}
+      {loadError && <p className="text-sm text-status-blocked">{loadError}</p>}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
           <Link
             key={project.id}
             href={`/dashboard/projects/${project.id}`}
-            className="rounded-xl border border-stone-200 bg-white p-5 transition-colors hover:border-primary-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-primary-700"
+            className="rounded-xl border border-border bg-surface p-5 transition-colors hover:border-brand/60"
           >
-            <span className="inline-flex rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700 dark:bg-primary-500/15 dark:text-primary-100">
+            <span className="inline-flex rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">
               {project.key}
             </span>
-            <h2 className="mt-3 text-sm font-semibold text-stone-900 dark:text-stone-100">{project.name}</h2>
+            <h2 className="mt-3 text-sm font-semibold text-ink">{project.name}</h2>
             {project.description && (
-              <p className="mt-1 line-clamp-2 text-xs text-stone-500 dark:text-stone-400">{project.description}</p>
+              <p className="mt-1 line-clamp-2 text-xs text-ink-muted">{project.description}</p>
             )}
           </Link>
         ))}
 
         {projects.length === 0 && !loadError && (
-          <p className="col-span-full text-sm text-stone-500 dark:text-stone-400">No projects yet.</p>
+          <p className="col-span-full text-sm text-ink-muted">No projects yet.</p>
         )}
       </div>
 
       {canCreate && (
-        <section className="rounded-xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
-          <h2 className="mb-4 text-sm font-semibold text-stone-900 dark:text-stone-100">New project</h2>
+        <section className="rounded-xl border border-border bg-surface p-5">
+          <h2 className="mb-4 text-sm font-semibold text-ink">New project</h2>
           <form onSubmit={handleCreate} className="flex flex-wrap items-end gap-3">
             <div className="flex min-w-[220px] flex-1 flex-col gap-1.5">
-              <label htmlFor="project-name" className="text-xs font-medium text-stone-600 dark:text-stone-300">
+              <label htmlFor="project-name" className="text-xs font-medium text-ink-muted">
                 Name
               </label>
               <input
@@ -116,11 +116,11 @@ export default function ProjectsPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
               />
             </div>
             <div className="flex w-32 flex-col gap-1.5">
-              <label htmlFor="project-key" className="text-xs font-medium text-stone-600 dark:text-stone-300">
+              <label htmlFor="project-key" className="text-xs font-medium text-ink-muted">
                 Key
               </label>
               <input
@@ -129,18 +129,18 @@ export default function ProjectsPage() {
                 placeholder="DEV"
                 value={key}
                 onChange={(e) => setKey(e.target.value.toUpperCase())}
-                className="rounded-lg border border-stone-300 px-3 py-2 text-sm uppercase text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                className="rounded-lg border border-border bg-surface px-3 py-2 text-sm uppercase text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
               />
             </div>
             <button
               type="submit"
               disabled={creating}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create project"}
             </button>
           </form>
-          {createError && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{createError}</p>}
+          {createError && <p className="mt-3 text-sm text-status-blocked">{createError}</p>}
         </section>
       )}
     </div>

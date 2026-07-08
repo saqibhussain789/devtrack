@@ -15,16 +15,16 @@ interface Member {
 const ROLES = ["VIEWER", "DEVELOPER", "ADMIN", "OWNER"];
 
 const ROLE_BADGE: Record<string, string> = {
-  OWNER: "bg-primary-100 text-primary-700 dark:bg-primary-500/15 dark:text-primary-100",
-  ADMIN: "bg-accent-100 text-accent-700 dark:bg-accent-500/15 dark:text-accent-100",
-  DEVELOPER: "bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-200",
-  VIEWER: "bg-stone-100 text-stone-500 dark:bg-stone-800/60 dark:text-stone-400",
+  OWNER: "bg-brand/10 text-brand",
+  ADMIN: "bg-status-done/15 text-status-done",
+  DEVELOPER: "bg-border/50 text-ink",
+  VIEWER: "bg-border/30 text-ink-muted",
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  ACTIVE: "bg-accent-100 text-accent-700 dark:bg-accent-500/15 dark:text-accent-100",
-  INVITED: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200",
-  REMOVED: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-200",
+  ACTIVE: "bg-status-done/15 text-status-done",
+  INVITED: "bg-status-progress/15 text-status-progress",
+  REMOVED: "bg-status-blocked/15 text-status-blocked",
 };
 
 function Badge({ label, className }: { label: string; className: string }) {
@@ -94,8 +94,8 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-100">Overview</h1>
-        <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+        <h1 className="text-2xl font-semibold text-ink">Overview</h1>
+        <p className="mt-1 text-sm text-ink-muted">
           A snapshot of {workspace.name}. Kanban, GitHub, and deploy metrics land in later phases.
         </p>
       </div>
@@ -106,17 +106,17 @@ export default function DashboardPage() {
         <StatCard label="Your role" value={role ?? "—"} />
       </div>
 
-      <section className="rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-        <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4 dark:border-stone-800">
-          <h2 className="text-sm font-semibold text-stone-900 dark:text-stone-100">Members</h2>
+      <section className="rounded-xl border border-border bg-surface">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <h2 className="text-sm font-semibold text-ink">Members</h2>
         </div>
 
-        {membersError && <p className="px-5 py-4 text-sm text-red-600 dark:text-red-400">{membersError}</p>}
+        {membersError && <p className="px-5 py-4 text-sm text-status-blocked">{membersError}</p>}
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-stone-200 text-xs uppercase tracking-wide text-stone-400 dark:border-stone-800">
+              <tr className="border-b border-border text-xs uppercase tracking-wide text-ink-muted">
                 <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-5 py-3 font-medium">Email</th>
                 <th className="px-5 py-3 font-medium">Role</th>
@@ -125,9 +125,9 @@ export default function DashboardPage() {
             </thead>
             <tbody>
               {members.map((member) => (
-                <tr key={member.id} className="border-b border-stone-100 last:border-0 dark:border-stone-800/60">
-                  <td className="px-5 py-3 font-medium text-stone-900 dark:text-stone-100">{member.user.name}</td>
-                  <td className="px-5 py-3 text-stone-500 dark:text-stone-400">{member.user.email}</td>
+                <tr key={member.id} className="border-b border-border last:border-0">
+                  <td className="px-5 py-3 font-medium text-ink">{member.user.name}</td>
+                  <td className="px-5 py-3 text-ink-muted">{member.user.email}</td>
                   <td className="px-5 py-3">
                     <Badge label={member.role} className={ROLE_BADGE[member.role] ?? ""} />
                   </td>
@@ -142,11 +142,11 @@ export default function DashboardPage() {
       </section>
 
       {canManageMembers && (
-        <section className="rounded-xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
-          <h2 className="mb-4 text-sm font-semibold text-stone-900 dark:text-stone-100">Invite a member</h2>
+        <section className="rounded-xl border border-border bg-surface p-5">
+          <h2 className="mb-4 text-sm font-semibold text-ink">Invite a member</h2>
           <form onSubmit={handleInvite} className="flex flex-wrap items-end gap-3">
             <div className="flex min-w-[220px] flex-1 flex-col gap-1.5">
-              <label htmlFor="invite-email" className="text-xs font-medium text-stone-600 dark:text-stone-300">
+              <label htmlFor="invite-email" className="text-xs font-medium text-ink-muted">
                 Email
               </label>
               <input
@@ -155,18 +155,18 @@ export default function DashboardPage() {
                 required
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
-                className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="invite-role" className="text-xs font-medium text-stone-600 dark:text-stone-300">
+              <label htmlFor="invite-role" className="text-xs font-medium text-ink-muted">
                 Role
               </label>
               <select
                 id="invite-role"
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
-                className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>
@@ -178,12 +178,12 @@ export default function DashboardPage() {
             <button
               type="submit"
               disabled={inviting}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {inviting ? "Inviting…" : "Invite"}
             </button>
           </form>
-          {inviteError && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{inviteError}</p>}
+          {inviteError && <p className="mt-3 text-sm text-status-blocked">{inviteError}</p>}
         </section>
       )}
     </div>
@@ -192,9 +192,9 @@ export default function DashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
-      <p className="text-xs font-medium uppercase tracking-wide text-stone-400">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-stone-900 dark:text-stone-100">{value}</p>
+    <div className="rounded-xl border border-border bg-surface p-5">
+      <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-ink">{value}</p>
     </div>
   );
 }

@@ -93,45 +93,45 @@ export function DeploymentsPanel({
   return (
     <section className="flex flex-col gap-4">
       {justGeneratedToken && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-500/10">
-          <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+        <div className="rounded-xl border border-brand/30 bg-brand/5 p-5">
+          <h3 className="text-sm font-semibold text-ink">
             Deploy token generated — this is shown only once
           </h3>
-          <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+          <p className="mt-1 text-sm text-ink-muted">
             Have your CI pipeline report deployment status with this token:
           </p>
           <dl className="mt-3 space-y-2 text-sm">
             <div>
-              <dt className="font-medium text-amber-900 dark:text-amber-100">Report URL</dt>
-              <dd className="font-mono text-xs text-amber-800 dark:text-amber-200">
+              <dt className="font-medium text-ink">Report URL</dt>
+              <dd className="font-mono text-xs text-ink-muted">
                 POST {API_URL}/deploy/{projectId}/report
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-amber-900 dark:text-amber-100">Header</dt>
-              <dd className="font-mono text-xs text-amber-800 dark:text-amber-200">
+              <dt className="font-medium text-ink">Header</dt>
+              <dd className="font-mono text-xs text-ink-muted">
                 X-Deploy-Token: {justGeneratedToken}
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-amber-900 dark:text-amber-100">Body</dt>
-              <dd className="font-mono text-xs text-amber-800 dark:text-amber-200">
+              <dt className="font-medium text-ink">Body</dt>
+              <dd className="font-mono text-xs text-ink-muted">
                 {"{ \"environment\": \"PROD\", \"commitSha\": \"<sha>\", \"status\": \"SUCCESS\" }"}
               </dd>
             </div>
           </dl>
           <button
             onClick={() => setJustGeneratedToken(null)}
-            className="mt-4 rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-100 dark:hover:bg-amber-500/20"
+            className="mt-4 rounded-lg border border-brand/30 px-3 py-1.5 text-xs font-medium text-brand hover:bg-brand/10"
           >
             I&apos;ve saved it
           </button>
         </div>
       )}
 
-      <div className="rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-5 py-4 dark:border-stone-800">
-          <h2 className="text-sm font-semibold text-stone-900 dark:text-stone-100">Deployments</h2>
+      <div className="rounded-xl border border-border bg-surface">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
+          <h2 className="text-sm font-semibold text-ink">Deployments</h2>
 
           <div className="flex items-center gap-3">
             {canLog && (
@@ -139,7 +139,7 @@ export function DeploymentsPanel({
                 <select
                   value={environment}
                   onChange={(e) => setEnvironment(e.target.value as DeploymentEnvironment)}
-                  className="rounded-lg border border-stone-300 px-2 py-1.5 text-xs text-stone-900 outline-none focus:border-primary-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                  className="rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-ink outline-none focus:border-brand"
                 >
                   {ENVIRONMENTS.map((env) => (
                     <option key={env} value={env}>
@@ -152,12 +152,12 @@ export function DeploymentsPanel({
                   placeholder="commit sha"
                   value={commitSha}
                   onChange={(e) => setCommitSha(e.target.value)}
-                  className="w-32 rounded-lg border border-stone-300 px-2 py-1.5 text-xs text-stone-900 outline-none focus:border-primary-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                  className="w-32 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-ink outline-none focus:border-brand"
                 />
                 <button
                   type="submit"
                   disabled={logging}
-                  className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {logging ? "Logging…" : "Log deploy"}
                 </button>
@@ -168,7 +168,7 @@ export function DeploymentsPanel({
               <button
                 onClick={handleGenerateToken}
                 disabled={generating}
-                className="rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-ink hover:bg-border/40 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {generating ? "Generating…" : "Generate CI token"}
               </button>
@@ -176,23 +176,23 @@ export function DeploymentsPanel({
           </div>
         </div>
 
-        {tokenError && <p className="px-5 pt-3 text-sm text-red-600 dark:text-red-400">{tokenError}</p>}
-        {logError && <p className="px-5 pt-3 text-sm text-red-600 dark:text-red-400">{logError}</p>}
-        {listError && <p className="px-5 py-4 text-sm text-red-600 dark:text-red-400">{listError}</p>}
+        {tokenError && <p className="px-5 pt-3 text-sm text-status-blocked">{tokenError}</p>}
+        {logError && <p className="px-5 pt-3 text-sm text-status-blocked">{logError}</p>}
+        {listError && <p className="px-5 py-4 text-sm text-status-blocked">{listError}</p>}
 
-        <div className="flex flex-col divide-y divide-stone-100 dark:divide-stone-800/60">
+        <div className="flex flex-col divide-y divide-border">
           {deployments.map((deployment) => (
             <div key={deployment.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
               <div>
-                <p className="font-medium text-stone-900 dark:text-stone-100">
-                  <span className="mr-2 rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-semibold text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+                <p className="font-medium text-ink">
+                  <span className="mr-2 rounded bg-border/50 px-1.5 py-0.5 text-[11px] font-semibold text-ink">
                     {deployment.environment}
                   </span>
-                  <span className="font-mono text-xs text-stone-500 dark:text-stone-400">
+                  <span className="font-mono text-xs text-ink-muted">
                     {deployment.commitSha.slice(0, 10)}
                   </span>
                 </p>
-                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                <p className="mt-1 text-xs text-ink-muted">
                   {deployment.triggeredBy ? `by ${deployment.triggeredBy.name}` : "via CI"} · started{" "}
                   {formatTimestamp(deployment.startedAt)} · finished {formatTimestamp(deployment.finishedAt)}
                   {deployment.failureReason && ` · ${deployment.failureReason}`}
@@ -203,7 +203,7 @@ export function DeploymentsPanel({
           ))}
 
           {deployments.length === 0 && !listError && (
-            <p className="px-5 py-6 text-sm text-stone-400">No deployments logged yet.</p>
+            <p className="px-5 py-6 text-sm text-ink-muted">No deployments logged yet.</p>
           )}
         </div>
       </div>
