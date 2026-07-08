@@ -7,6 +7,7 @@ import { useAuth } from "../../lib/auth-context";
 import { NotificationsProvider } from "../../lib/notifications-context";
 import { Brand } from "../../components/brand";
 import { NotificationBell } from "../../components/notifications/notification-bell";
+import { ThemeToggle } from "../../components/theme-toggle";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", enabled: true },
@@ -29,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-stone-500 dark:text-stone-400">Loading…</p>
+        <p className="text-ink-muted">Loading…</p>
       </div>
     );
   }
@@ -40,7 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <NotificationsProvider>
       <div className="flex min-h-screen">
-        <aside className="hidden w-64 flex-col border-r border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900 sm:flex">
+        <aside className="hidden w-64 flex-col border-r border-border bg-surface p-6 sm:flex">
           <div className="mb-8">
             <Brand />
           </div>
@@ -57,15 +58,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   className={[
                     "flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     active
-                      ? "bg-primary-50 text-primary-700 dark:bg-primary-900/40 dark:text-primary-200"
+                      ? "bg-brand/10 text-brand"
                       : item.enabled
-                        ? "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
-                        : "cursor-not-allowed text-stone-300 dark:text-stone-700",
+                        ? "text-ink-muted hover:bg-border/40"
+                        : "cursor-not-allowed text-ink-muted/50",
                   ].join(" ")}
                 >
                   {item.label}
                   {!item.enabled && (
-                    <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-stone-400 dark:bg-stone-800">
+                    <span className="rounded bg-border/50 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-ink-muted">
                       Soon
                     </span>
                   )}
@@ -76,28 +77,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </aside>
 
         <div className="flex flex-1 flex-col">
-          <header className="flex items-center justify-between border-b border-stone-200 bg-white px-6 py-4 dark:border-stone-800 dark:bg-stone-900">
+          <header className="flex items-center justify-between border-b border-border bg-surface px-6 py-4">
             <div>
-              <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{workspace?.name}</p>
-              <p className="text-xs text-stone-500 dark:text-stone-400">{role}</p>
+              <p className="text-sm font-semibold text-ink">{workspace?.name}</p>
+              <p className="text-xs text-ink-muted">{role}</p>
             </div>
 
             <div className="flex items-center gap-4">
               <NotificationBell />
               <div className="text-right">
-                <p className="text-sm font-medium text-stone-900 dark:text-stone-100">{user.name}</p>
-                <p className="text-xs text-stone-500 dark:text-stone-400">{user.email}</p>
+                <p className="text-sm font-medium text-ink">{user.name}</p>
+                <p className="text-xs text-ink-muted">{user.email}</p>
               </div>
               <button
                 onClick={() => logout().then(() => router.replace("/login"))}
-                className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+                className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-border/40"
               >
                 Log out
               </button>
+              <ThemeToggle />
             </div>
           </header>
 
-          <main className="flex-1 bg-stone-50 p-6 dark:bg-stone-950">{children}</main>
+          <main className="flex-1 bg-canvas p-6">{children}</main>
         </div>
       </div>
     </NotificationsProvider>

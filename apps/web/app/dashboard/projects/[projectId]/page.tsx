@@ -10,12 +10,19 @@ import { TaskCard } from "../../../../components/kanban/task-card";
 import { TaskDrawer } from "../../../../components/kanban/task-drawer";
 import { GitHubPanel } from "../../../../components/kanban/github-panel";
 import { DeploymentsPanel } from "../../../../components/kanban/deployments-panel";
+import { StatusDot } from "../../../../components/status-dot";
 import type { BoardData, StatusColumn, TaskSummary } from "../../../../components/kanban/types";
 
 interface Member {
   id: string;
   user: { id: string; name: string; email: string };
 }
+
+const CATEGORY_DOT: Record<string, string> = {
+  TODO: "bg-status-todo",
+  IN_PROGRESS: "bg-status-progress",
+  DONE: "bg-status-done",
+};
 
 export default function BoardPage() {
   const params = useParams<{ projectId: string }>();
@@ -129,7 +136,7 @@ export default function BoardPage() {
   }
 
   if (!board) {
-    return <p className="text-sm text-stone-500 dark:text-stone-400">{error ?? "Loading board…"}</p>;
+    return <p className="text-sm text-ink-muted">{error ?? "Loading board…"}</p>;
   }
 
   return (
@@ -137,25 +144,25 @@ export default function BoardPage() {
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700 dark:bg-primary-500/15 dark:text-primary-100">
+            <span className="inline-flex rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">
               {board.project.key}
             </span>
-            <h1 className="text-xl font-semibold text-stone-900 dark:text-stone-100">{board.project.name}</h1>
+            <h1 className="text-xl font-semibold text-ink">{board.project.name}</h1>
           </div>
           {board.project.description && (
-            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{board.project.description}</p>
+            <p className="mt-1 text-sm text-ink-muted">{board.project.description}</p>
           )}
         </div>
 
         <Link
           href={`/dashboard/projects/${board.project.id}/metrics`}
-          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+          className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-border/40"
         >
           View metrics →
         </Link>
       </div>
 
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="text-sm text-status-blocked">{error}</p>}
 
       <div className="flex flex-1 gap-4 overflow-x-auto pb-4">
         {board.statuses.map((status) => (
@@ -163,11 +170,14 @@ export default function BoardPage() {
             key={status.id}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleDropOnColumn(e, status)}
-            className="flex w-72 flex-shrink-0 flex-col rounded-xl bg-stone-100 p-3 dark:bg-stone-900/60"
+            className="flex w-72 flex-shrink-0 flex-col rounded-xl bg-border/30 p-3"
           >
             <div className="mb-3 flex items-center justify-between px-1">
-              <h2 className="text-sm font-semibold text-stone-700 dark:text-stone-200">{status.name}</h2>
-              <span className="text-xs text-stone-400">{status.tasks.length}</span>
+              <div className="flex items-center gap-2">
+                <StatusDot colorClassName={CATEGORY_DOT[status.category] ?? "bg-status-todo"} />
+                <h2 className="text-sm font-semibold text-ink">{status.name}</h2>
+              </div>
+              <span className="text-xs text-ink-muted">{status.tasks.length}</span>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -190,7 +200,7 @@ export default function BoardPage() {
                   onChange={(e) => setQuickAddTitle(e.target.value)}
                   placeholder="+ Add a task"
                   disabled={addingTask}
-                  className="w-full rounded-lg border border-transparent bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-stone-800 dark:text-stone-100"
+                  className="w-full rounded-lg border border-transparent bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
                 />
               </form>
             )}

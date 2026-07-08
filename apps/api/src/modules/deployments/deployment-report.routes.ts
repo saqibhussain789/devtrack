@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { reportDeploymentSchema } from "@repo/shared";
+import { publicIntegrationRateLimiter } from "../../middleware/rate-limit.middleware";
 import { validate } from "../../middleware/validate.middleware";
 import { reportDeploymentHandler } from "./deployment.controller";
 
@@ -12,6 +13,11 @@ import { reportDeploymentHandler } from "./deployment.controller";
 // matching them against a later router's routes (see routes/index.ts).
 const router = Router();
 
-router.post("/:projectId/report", validate(reportDeploymentSchema), reportDeploymentHandler);
+router.post(
+  "/:projectId/report",
+  publicIntegrationRateLimiter,
+  validate(reportDeploymentSchema),
+  reportDeploymentHandler
+);
 
 export default router;

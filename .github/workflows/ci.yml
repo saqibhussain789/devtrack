@@ -54,3 +54,12 @@ jobs:
       - run: npm run check-types
       - run: npm test
       - run: npm run build
+
+      - name: Dependency audit
+        # Fails only on high/critical — two moderate advisories are known and
+        # accepted (a dev-only Prisma CLI transitive dependency and a
+        # Next.js-internal build-time postcss copy, neither reachable from a
+        # deployed request; see README) so they shouldn't make CI flaky, but a
+        # new high/critical advisory — like the Next.js CVEs fixed in this
+        # phase — should actually block the build.
+        run: npm audit --audit-level=high

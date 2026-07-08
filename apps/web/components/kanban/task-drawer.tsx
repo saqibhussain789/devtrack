@@ -111,55 +111,55 @@ export function TaskDrawer({
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/30" onClick={onClose}>
       <div
-        className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900"
+        className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-border bg-surface p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-xs font-medium text-stone-400">
+          <span className="text-xs font-medium text-ink-muted">
             {projectKey}-{task?.taskNumber ?? "…"}
           </span>
           <button
             onClick={onClose}
-            className="rounded-lg px-2 py-1 text-sm text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+            className="rounded-lg px-2 py-1 text-sm text-ink-muted hover:bg-border/40"
           >
             Close
           </button>
         </div>
 
-        {error && <p className="mb-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {error && <p className="mb-3 text-sm text-status-blocked">{error}</p>}
 
         {!task ? (
-          <p className="text-sm text-stone-500 dark:text-stone-400">Loading…</p>
+          <p className="text-sm text-ink-muted">Loading…</p>
         ) : (
           <>
             <form onSubmit={handleSave} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-stone-600 dark:text-stone-300">Title</label>
+                <label className="text-xs font-medium text-ink-muted">Title</label>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
-                  className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                  className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-stone-600 dark:text-stone-300">Description</label>
+                <label className="text-xs font-medium text-ink-muted">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
-                  className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                  className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-stone-600 dark:text-stone-300">Priority</label>
+                  <label className="text-xs font-medium text-ink-muted">Priority</label>
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                    className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                    className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
                   >
                     {PRIORITIES.map((p) => (
                       <option key={p} value={p}>
@@ -170,24 +170,24 @@ export function TaskDrawer({
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-stone-600 dark:text-stone-300">Story points</label>
+                  <label className="text-xs font-medium text-ink-muted">Story points</label>
                   <input
                     type="number"
                     min={0}
                     max={100}
                     value={storyPoints}
                     onChange={(e) => setStoryPoints(e.target.value)}
-                    className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                    className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
                   />
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-stone-600 dark:text-stone-300">Assignee</label>
+                <label className="text-xs font-medium text-ink-muted">Assignee</label>
                 <select
                   value={assigneeId}
                   onChange={(e) => setAssigneeId(e.target.value)}
-                  className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                  className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
                 >
                   <option value="">Unassigned</option>
                   {members.map((m) => (
@@ -201,29 +201,29 @@ export function TaskDrawer({
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {saving ? "Saving…" : "Save changes"}
               </button>
             </form>
 
-            <div className="mt-8 flex flex-col gap-3 border-t border-stone-200 pt-6 dark:border-stone-800">
-              <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+            <div className="mt-8 flex flex-col gap-3 border-t border-border pt-6">
+              <h3 className="text-sm font-semibold text-ink">
                 Comments ({task.comments.length})
               </h3>
 
               <div className="flex flex-col gap-3">
                 {task.comments.map((comment) => (
-                  <div key={comment.id} className="rounded-lg bg-stone-50 p-3 text-sm dark:bg-stone-800/60">
+                  <div key={comment.id} className="rounded-lg bg-border/30 p-3 text-sm">
                     <div className="mb-1 flex items-center justify-between">
-                      <span className="font-medium text-stone-900 dark:text-stone-100">{comment.author.name}</span>
-                      <span className="text-xs text-stone-400">{new Date(comment.createdAt).toLocaleString()}</span>
+                      <span className="font-medium text-ink">{comment.author.name}</span>
+                      <span className="text-xs text-ink-muted">{new Date(comment.createdAt).toLocaleString()}</span>
                     </div>
-                    <p className="text-stone-600 dark:text-stone-300">{comment.body}</p>
+                    <p className="text-ink-muted">{comment.body}</p>
                   </div>
                 ))}
                 {task.comments.length === 0 && (
-                  <p className="text-sm text-stone-400">No comments yet.</p>
+                  <p className="text-sm text-ink-muted">No comments yet.</p>
                 )}
               </div>
 
@@ -233,13 +233,13 @@ export function TaskDrawer({
                   onChange={(e) => setCommentBody(e.target.value)}
                   placeholder="Add a comment…"
                   rows={2}
-                  className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+                  className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
                 />
-                {commentError && <p className="text-sm text-red-600 dark:text-red-400">{commentError}</p>}
+                {commentError && <p className="text-sm text-status-blocked">{commentError}</p>}
                 <button
                   type="submit"
                   disabled={postingComment}
-                  className="self-start rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+                  className="self-start rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-border/40 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {postingComment ? "Posting…" : "Post comment"}
                 </button>

@@ -17,7 +17,7 @@ Built phase-by-phase against the implementation doc's roadmap:
 | 4 | GitHub integration — repo connect, signed webhooks, PR sync, task linking | ✅ Done |
 | 5 | Deployment log — CI-reported deployment status, manual logging | ✅ Done |
 | 6 | Realtime notifications (Socket.IO), metrics dashboard, GitHub OAuth login | ✅ Done |
-| 7 | Hardening & launch (security pass, prod config) | ⏳ Not started |
+| 7 | Hardening & launch (security pass, prod config) | ✅ Done |
 
 ## Feature overview (what's implemented today)
 
@@ -289,6 +289,68 @@ Optional — the "Continue with GitHub" button is hidden automatically until con
 3. Copy the generated Client ID and Client Secret into `apps/api/.env` as
    `GITHUB_OAUTH_CLIENT_ID` and `GITHUB_OAUTH_CLIENT_SECRET`, then restart the API.
 
+## Security hardening
+
+- **Headers**: [`helmet`](https://helmetjs.github.io/) is applied to every response (HSTS,
+  `X-Content-Type-Options: nosniff`, no `X-Powered-By`, etc.). Content-Security-Policy is left
+  off at the API layer — this server only ever returns JSON, so a CSP header has nothing to
+  constrain; the browser-facing security policy belongs to the Next.js app instead.
+- **Rate limiting**: three tiers, all IP-based —
+  - `authRateLimiter` (20 req/15 min) on `/auth/*` — the most sensitive, credential-guessing surface.
+  - `apiRateLimiter` (600 req/15 min) applied globally as a backstop against runaway clients/scripts.
+  - `publicIntegrationRateLimiter` (120 req/5 min) on the GitHub webhook and CI deploy-report
+    endpoints specifically — both are reachable without a user session (their secret/token *is*
+    the auth check), which makes them the one place an attacker can cheaply brute-force
+    credentials by request volume alone.
+- **Body size limits**: JSON/urlencoded bodies capped at 1 MB to blunt large-payload abuse.
+- **`trust proxy`**: enabled in production only, so rate limiting and request logging see the
+  real client IP instead of a reverse proxy's, when deployed behind one (Render, Railway, Fly,
+  a load balancer, etc.).
+- **Graceful shutdown**: `SIGTERM`/`SIGINT` stop new connections, close the Socket.IO server,
+  disconnect Prisma, and exit — so a container orchestrator's redeploy/scale-down doesn't cut
+  off in-flight requests or leak Postgres connections. A 10s watchdog force-exits if something
+  hangs.
+- **Dependency audit**: CI runs `npm audit --audit-level=high` on every push, so a newly
+  introduced high/critical vulnerability fails the build. Two moderate advisories are currently
+  known and accepted rather than chased: `@prisma/dev` (a transitive dependency of the `prisma`
+  CLI, dev-tooling only, never runs in a deployed request path) and a `postcss` copy bundled
+  *inside* Next.js's own build tooling (fixing it would mean downgrading Next by 7 major
+  versions — the CVE only matters when processing untrusted CSS at build time, which this repo
+  never does).
+
+## Production deployment
+
+Both apps have multi-stage Dockerfiles. **Build from the repo root**, not the app directory —
+npm workspaces need the root `package.json`/lockfile and the `@repo/shared` package alongside
+whichever app you're building:
+
+```bash
+# API
+docker build -f apps/api/Dockerfile -t devtrack-api .
+docker run --rm -p 4000:4000 --env-file apps/api/.env devtrack-api
+
+# Web — NEXT_PUBLIC_API_URL is baked into the client bundle at build time, not read at
+# container startup, so it's a build arg rather than a runtime env var
+docker build -f apps/web/Dockerfile \
+  --build-arg NEXT_PUBLIC_API_URL=https://your-api.example.com/api/v1 \
+  -t devtrack-web .
+docker run --rm -p 3000:3000 devtrack-web
+```
+
+Applying database migrations is a separate release step, run once per deploy — not something
+the container does on every boot (which would race across multiple replicas):
+
+```bash
+docker run --rm --env-file apps/api/.env devtrack-api npx prisma migrate deploy
+```
+
+In production, also set: `NODE_ENV=production`, real `JWT_ACCESS_SECRET`/`JWT_REFRESH_SECRET`
+values (see the random-secret command above), `CORS_ORIGIN` to your actual frontend origin, and
+`FRONTEND_URL`/`GITHUB_OAUTH_CALLBACK_URL` if GitHub OAuth login is enabled. `docker-compose.yml`
+in this repo is dev-only (just Postgres) — for a full stack, either run these two images
+alongside a managed Postgres instance on whatever platform you choose (Render, Railway, Fly,
+ECS, etc.), or write your own compose/k8s manifest referencing them.
+
 ## Scripts
 
 Run from the repo root unless noted:
@@ -328,19 +390,21 @@ apps/
   api/                Express API
     src/
       modules/         one folder per domain: auth, workspaces, projects, tasks, github, deployments, notifications, metrics, ...
-      middleware/       auth, RBAC, validation, error handling
+      middleware/       auth, RBAC, validation, error handling, rate limiting
       routes/           route aggregator mounted at /api/v1
       sockets/          Socket.IO server setup (auth handshake, per-user rooms)
       tests/            Vitest + Supertest suites
     prisma/
       schema.prisma     full data model
       migrations/
+    Dockerfile          multi-stage production image (build from repo root)
   web/                Next.js dashboard
     app/               App Router pages (auth, dashboard, projects, project metrics)
     components/        Kanban board, GitHub panel, deployments panel, notification bell, metrics tiles/chart
     lib/                API client, auth context, socket client, notifications context
+    Dockerfile          multi-stage production image, Next standalone output
 packages/
-  shared/               Zod schemas + TS types shared by both apps
+  shared/               Zod schemas + TS types shared by both apps (compiled to dist/ for production builds)
 ```
 
 ## Troubleshooting

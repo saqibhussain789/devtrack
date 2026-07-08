@@ -34,17 +34,17 @@ export default function ProjectMetricsPage() {
       <div>
         <Link
           href={`/dashboard/projects/${params.projectId}`}
-          className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
+          className="text-sm font-medium text-brand hover:text-brand/80"
         >
           ← Back to board
         </Link>
-        <h1 className="mt-2 text-xl font-semibold text-stone-900 dark:text-stone-100">Metrics</h1>
-        <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Trailing 30 days.</p>
+        <h1 className="mt-2 text-xl font-semibold text-ink">Metrics</h1>
+        <p className="mt-1 text-sm text-ink-muted">Trailing 30 days.</p>
       </div>
 
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="text-sm text-status-blocked">{error}</p>}
 
-      {!metrics && !error && <p className="text-sm text-stone-500 dark:text-stone-400">Loading…</p>}
+      {!metrics && !error && <p className="text-sm text-ink-muted">Loading…</p>}
 
       {metrics && (
         <>

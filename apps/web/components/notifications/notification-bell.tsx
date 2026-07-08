@@ -34,7 +34,7 @@ export function NotificationBell() {
       <button
         onClick={() => setOpen((prev) => !prev)}
         aria-label="Notifications"
-        className="relative rounded-lg border border-stone-300 p-2 text-stone-600 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+        className="relative rounded-lg border border-border p-2 text-ink-muted transition-colors hover:bg-border/40"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="h-5 w-5">
           <path
@@ -44,20 +44,20 @@ export function NotificationBell() {
           />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -right-1 -top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-status-blocked px-1 text-[10px] font-semibold text-white">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-800 dark:bg-stone-900">
-          <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3 dark:border-stone-800">
-            <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Notifications</p>
+        <div className="absolute right-0 z-20 mt-2 w-80 rounded-xl border border-border bg-surface shadow-lg">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <p className="text-sm font-semibold text-ink">Notifications</p>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead()}
-                className="text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
+                className="text-xs font-medium text-brand hover:text-brand/80"
               >
                 Mark all read
               </button>
@@ -66,19 +66,19 @@ export function NotificationBell() {
 
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 && (
-              <p className="px-4 py-6 text-center text-sm text-stone-400">No notifications yet.</p>
+              <p className="px-4 py-6 text-center text-sm text-ink-muted">No notifications yet.</p>
             )}
 
             {notifications.map((notification) => {
               const content = (
                 <div
-                  className={`flex flex-col gap-0.5 border-b border-stone-100 px-4 py-3 text-left text-sm last:border-0 dark:border-stone-800/60 ${
-                    notification.readAt ? "" : "bg-primary-50/60 dark:bg-primary-500/10"
+                  className={`flex flex-col gap-0.5 border-b border-border px-4 py-3 text-left text-sm last:border-0 ${
+                    notification.readAt ? "" : "bg-brand/10"
                   }`}
                 >
-                  <p className="font-medium text-stone-900 dark:text-stone-100">{notification.title}</p>
-                  <p className="text-stone-600 dark:text-stone-300">{notification.message}</p>
-                  <p className="text-xs text-stone-400">{timeAgo(notification.createdAt)}</p>
+                  <p className="font-medium text-ink">{notification.title}</p>
+                  <p className="text-ink-muted">{notification.message}</p>
+                  <p className="text-xs text-ink-muted">{timeAgo(notification.createdAt)}</p>
                 </div>
               );
 
@@ -87,7 +87,7 @@ export function NotificationBell() {
                   key={notification.id}
                   href={`/dashboard/projects/${notification.projectId}`}
                   onClick={() => markRead(notification.id)}
-                  className="block hover:bg-stone-50 dark:hover:bg-stone-800/40"
+                  className="block hover:bg-border/30"
                 >
                   {content}
                 </Link>
@@ -95,7 +95,7 @@ export function NotificationBell() {
                 <button
                   key={notification.id}
                   onClick={() => markRead(notification.id)}
-                  className="block w-full hover:bg-stone-50 dark:hover:bg-stone-800/40"
+                  className="block w-full hover:bg-border/30"
                 >
                   {content}
                 </button>

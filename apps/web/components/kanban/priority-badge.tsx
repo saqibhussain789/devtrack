@@ -1,15 +1,29 @@
+import { StatusDot } from "../status-dot";
 import type { TaskPriority } from "./types";
 
-const PRIORITY_CLASSES: Record<TaskPriority, string> = {
-  LOW: "bg-stone-100 text-stone-500 dark:bg-stone-800/60 dark:text-stone-400",
-  MEDIUM: "bg-primary-100 text-primary-700 dark:bg-primary-500/15 dark:text-primary-100",
-  HIGH: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200",
-  URGENT: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-200",
+const PRIORITY_DOT: Record<TaskPriority, string> = {
+  LOW: "bg-status-todo",
+  MEDIUM: "bg-brand",
+  HIGH: "bg-status-blocked",
+  URGENT: "bg-status-blocked",
+};
+
+// URGENT reuses the same "blocked" red as HIGH (no extra hue in the given
+// palette to escalate further) but bumps to semibold so it still reads as
+// one step more severe than HIGH at a glance.
+const PRIORITY_WEIGHT: Record<TaskPriority, string> = {
+  LOW: "font-medium",
+  MEDIUM: "font-medium",
+  HIGH: "font-medium",
+  URGENT: "font-semibold",
 };
 
 export function PriorityBadge({ priority }: { priority: TaskPriority }) {
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${PRIORITY_CLASSES[priority]}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full bg-border/40 px-2 py-0.5 text-[11px] text-ink ${PRIORITY_WEIGHT[priority]}`}
+    >
+      <StatusDot colorClassName={PRIORITY_DOT[priority]} />
       {priority}
     </span>
   );
