@@ -5,28 +5,43 @@ import type { TaskSummary } from "./types";
 export function TaskCard({
   task,
   projectKey,
+  isDragging,
   onOpen,
   onDragStart,
+  onDragEnd,
   onDropBefore,
 }: {
   task: TaskSummary;
   projectKey: string;
+  isDragging: boolean;
   onOpen: () => void;
   onDragStart: (event: DragEvent<HTMLButtonElement>) => void;
+  onDragEnd: () => void;
   onDropBefore: (event: DragEvent<HTMLButtonElement>) => void;
 }) {
   return (
     <button
       type="button"
       draggable
-      onDragStart={onDragStart}
-      onDragOver={(e) => e.preventDefault()}
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        onDragStart(e);
+      }}
+      onDragEnd={onDragEnd}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      }}
       onDrop={(e) => {
+        e.preventDefault();
         e.stopPropagation();
         onDropBefore(e);
       }}
       onClick={onOpen}
-      className="flex w-full flex-col gap-2 rounded-lg border border-border bg-surface p-3 text-left shadow-sm transition-colors hover:border-brand/60"
+      className={[
+        "flex w-full flex-col gap-2 rounded-lg border border-border bg-surface p-3 text-left shadow-sm transition-opacity hover:border-brand/60",
+        isDragging ? "opacity-40" : "opacity-100",
+      ].join(" ")}
     >
       <div className="flex items-start justify-between gap-2">
         <span className="text-xs font-medium text-ink-muted">
