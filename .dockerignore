@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/dist
+**/.next
+**/generated
+.git
+.turbo
+**/.turbo
+*.log
+.env
+.env.*
+!.env.example
