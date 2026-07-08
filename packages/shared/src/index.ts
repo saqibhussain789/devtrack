@@ -7,3 +7,4 @@ export * from "./schemas/task";
 export * from "./schemas/github";
 export * from "./schemas/deployment";
 export * from "./schemas/metrics";
+export * from "./schemas/insights";
