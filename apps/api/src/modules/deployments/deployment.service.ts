@@ -192,3 +192,13 @@ export async function listDeployments(projectId: string, environment?: Deploymen
     select: DEPLOYMENT_SELECT,
   });
 }
+
+/** Deployment log across every project in a workspace, for the workspace-wide Deployments page. */
+export async function listWorkspaceDeployments(workspaceId: string, environment?: DeploymentEnvironment) {
+  return prisma.deployment.findMany({
+    where: { project: { workspaceId }, ...(environment ? { environment } : {}) },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+    select: { ...DEPLOYMENT_SELECT, project: { select: { id: true, name: true, key: true } } },
+  });
+}

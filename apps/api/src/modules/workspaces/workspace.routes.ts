@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { createWorkspaceSchema, inviteMemberSchema, updateMemberSchema } from "@repo/shared";
+import { createWorkspaceSchema, inviteMemberSchema, listDeploymentsQuerySchema, updateMemberSchema } from "@repo/shared";
 import { requireAuth } from "../../middleware/auth.middleware";
 import { requireWorkspaceRole } from "../../middleware/rbac.middleware";
 import { validate } from "../../middleware/validate.middleware";
 import {
   createWorkspaceHandler,
   inviteWorkspaceMember,
+  listWorkspaceDeploymentsHandler,
   listWorkspaceMembers,
   listWorkspaces,
   updateWorkspaceMember,
@@ -29,6 +30,13 @@ router.patch(
   requireWorkspaceRole("ADMIN"),
   validate(updateMemberSchema),
   updateWorkspaceMember
+);
+
+router.get(
+  "/:id/deployments",
+  requireWorkspaceRole("VIEWER"),
+  validate(listDeploymentsQuerySchema, "query"),
+  listWorkspaceDeploymentsHandler
 );
 
 export default router;

@@ -153,3 +153,41 @@ describe("manual deployment logging", () => {
     expect(res.body.data.triggeredBy.email).toBe(ownerEmail);
   });
 });
+
+describe("workspace-wide deployment log", () => {
+  it("aggregates deployments across every project in the workspace, most recent first", async () => {
+    const secondProject = await createTestProject(ownerToken, workspaceId, { key: "DPL2" });
+
+    await request(app)
+      .post(`/api/v1/projects/${secondProject.id}/deployments`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .send({ environment: "PROD", commitSha: commitSha("6") });
+
+    const res = await request(app)
+      .get(`/api/v1/workspaces/${workspaceId}/deployments`)
+      .set("Authorization", `Bearer ${ownerToken}`);
+
+    expect(res.status).toBe(200);
+    const projectKeys = new Set(res.body.data.map((d: { project: { key: string } }) => d.project.key));
+    expect(projectKeys.has("DPL")).toBe(true);
+    expect(projectKeys.has("DPL2")).toBe(true);
+    expect(res.body.data[0].commitSha).toBe(commitSha("6"));
+  });
+
+  it("blocks a non-member from reading the workspace deployment log", async () => {
+    const outsiderEmail = uniqueEmail("deploy-outsider");
+    const outsiderToken = await registerAndGetToken(outsiderEmail, "Deploy Outsider");
+
+    const res = await request(app)
+      .get(`/api/v1/workspaces/${workspaceId}/deployments`)
+      .set("Authorization", `Bearer ${outsiderToken}`);
+
+    expect(res.status).toBe(403);
+
+    const outsider = await prisma.user.findUnique({ where: { email: outsiderEmail } });
+    if (outsider) {
+      await prisma.workspace.deleteMany({ where: { createdBy: outsider.id } });
+      await prisma.user.delete({ where: { id: outsider.id } });
+    }
+  });
+});

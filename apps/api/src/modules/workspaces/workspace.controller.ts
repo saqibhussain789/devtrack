@@ -1,5 +1,6 @@
 import { ApiResponse } from "../../utils/api-response";
 import { asyncHandler } from "../../utils/async-handler";
+import { listWorkspaceDeployments } from "../deployments/deployment.service";
 import {
   createWorkspace,
   inviteMember,
@@ -36,4 +37,10 @@ export const updateWorkspaceMember = asyncHandler(async (req, res) => {
     req.body
   );
   ApiResponse.success(res, req, member);
+});
+
+export const listWorkspaceDeploymentsHandler = asyncHandler(async (req, res) => {
+  const { environment } = req.query as { environment?: "DEV" | "STAGING" | "PROD" };
+  const deployments = await listWorkspaceDeployments(req.params.id as string, environment);
+  ApiResponse.success(res, req, deployments);
 });
