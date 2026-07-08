@@ -88,3 +88,11 @@
 body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
+
+/* Safari/WebKit doesn't reliably fire native drag events from interactive
+ * elements (buttons, links, form controls) without this — the Kanban task
+ * card is a <button draggable>, so without it drags can silently fail to
+ * start on WebKit. */
+button[draggable="true"] {
+  -webkit-user-drag: element;
+}

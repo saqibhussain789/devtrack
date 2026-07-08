@@ -35,6 +35,8 @@ export default function BoardPage() {
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const [quickAddTitle, setQuickAddTitle] = useState("");
   const [addingTask, setAddingTask] = useState(false);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [dragOverStatusId, setDragOverStatusId] = useState<string | null>(null);
 
   const loadBoard = useCallback(async () => {
     if (!accessToken) return;
@@ -121,6 +123,15 @@ export default function BoardPage() {
 
   function handleCardDragStart(event: DragEvent<HTMLButtonElement>, taskId: string) {
     event.dataTransfer.setData("text/plain", taskId);
+    setDraggedTaskId(taskId);
+  }
+
+  function handleDragEnd() {
+    // Always fires after dragstart, whether the drop succeeded, landed
+    // outside any valid target, or was cancelled — the one reliable place to
+    // clear drag-visual state.
+    setDraggedTaskId(null);
+    setDragOverStatusId(null);
   }
 
   function handleDropOnCard(event: DragEvent<HTMLButtonElement>, status: StatusColumn, index: number) {
@@ -130,6 +141,7 @@ export default function BoardPage() {
   }
 
   function handleDropOnColumn(event: DragEvent<HTMLDivElement>, status: StatusColumn) {
+    event.preventDefault();
     const taskId = event.dataTransfer.getData("text/plain");
     if (!taskId) return;
     moveTask(taskId, status, null);
@@ -168,9 +180,16 @@ export default function BoardPage() {
         {board.statuses.map((status) => (
           <div
             key={status.id}
-            onDragOver={(e) => e.preventDefault()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+              if (dragOverStatusId !== status.id) setDragOverStatusId(status.id);
+            }}
             onDrop={(e) => handleDropOnColumn(e, status)}
-            className="flex w-72 flex-shrink-0 flex-col rounded-xl bg-border/30 p-3"
+            className={[
+              "flex w-72 flex-shrink-0 flex-col rounded-xl bg-border/30 p-3 transition-colors",
+              dragOverStatusId === status.id ? "ring-2 ring-brand/50" : "",
+            ].join(" ")}
           >
             <div className="mb-3 flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
@@ -186,8 +205,10 @@ export default function BoardPage() {
                   key={task.id}
                   task={task}
                   projectKey={board.project.key}
+                  isDragging={draggedTaskId === task.id}
                   onOpen={() => setOpenTaskId(task.id)}
                   onDragStart={(e) => handleCardDragStart(e, task.id)}
+                  onDragEnd={handleDragEnd}
                   onDropBefore={(e) => handleDropOnCard(e, status, index)}
                 />
               ))}
