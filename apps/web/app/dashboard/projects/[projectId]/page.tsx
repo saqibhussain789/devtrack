@@ -43,7 +43,19 @@ export default function BoardPage() {
 
     try {
       const data = await apiFetch<BoardData>(`/projects/${projectId}/board`, { accessToken });
-      setBoard(data);
+      // Task.sortOrder is a Prisma Decimal, which serializes to a JSON string
+      // (e.g. "1.5"), not a number — despite what TaskSummary's type claims.
+      // Left uncoerced, computeInsertSortOrder's arithmetic silently does
+      // string concatenation instead of addition (`"2" + 1 === "21"`),
+      // producing a value the backend's numeric schema then rejects.
+      const normalized = {
+        ...data,
+        statuses: data.statuses.map((status) => ({
+          ...status,
+          tasks: status.tasks.map((task) => ({ ...task, sortOrder: Number(task.sortOrder) })),
+        })),
+      };
+      setBoard(normalized);
       setError(null);
 
       const memberData = await apiFetch<Member[]>(`/workspaces/${data.project.workspaceId}/members`, {
