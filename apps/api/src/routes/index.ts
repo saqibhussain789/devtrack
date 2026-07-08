@@ -9,6 +9,7 @@ import deploymentRoutes from "../modules/deployments/deployment.routes";
 import deploymentReportRoutes from "../modules/deployments/deployment-report.routes";
 import notificationRoutes from "../modules/notifications/notification.routes";
 import metricsRoutes from "../modules/metrics/metrics.routes";
+import insightsRoutes from "../modules/insights/insights.routes";
 import healthRoutes from "./health.routes";
 
 const router = Router();
@@ -30,6 +31,7 @@ router.use("/projects", projectRoutes);
 router.use("/projects", githubRoutes);
 router.use("/projects", deploymentRoutes);
 router.use("/projects", metricsRoutes);
+router.use("/projects", insightsRoutes);
 router.use("/tasks", taskRoutes);
 router.use("/webhooks", webhookRoutes);
 router.use("/deploy", deploymentReportRoutes);

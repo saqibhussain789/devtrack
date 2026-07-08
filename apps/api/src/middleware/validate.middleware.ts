@@ -22,9 +22,19 @@ export function validate(schema: ZodType, target: ValidationTarget = "body") {
     }
 
     if (target === "query") {
-      // Express 5 exposes req.query as a getter-only property, so the parsed
-      // (coerced/defaulted) result must be merged in rather than reassigned.
-      Object.assign(req.query, result.data);
+      // Express 5's req.query is a getter that re-derives a fresh object from
+      // the raw querystring on every access, so Object.assign(req.query, ...)
+      // silently mutates a throwaway snapshot — a later `req.query` read (e.g.
+      // in the controller) sees the original, un-defaulted/un-coerced value.
+      // Shadowing it with an own property is the only way to make a parsed
+      // default (e.g. a missing optional query param) actually reach the
+      // controller.
+      Object.defineProperty(req, "query", {
+        value: result.data,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
     } else {
       req[target] = result.data;
     }
