@@ -68,6 +68,10 @@ export interface DeploymentSummary {
   triggeredBy: { id: string; name: string; email: string } | null;
 }
 
+export interface WorkspaceDeploymentSummary extends DeploymentSummary {
+  project: { id: string; name: string; key: string };
+}
+
 export interface TaskComment {
   id: string;
   body: string;

@@ -12,8 +12,8 @@ import { ThemeToggle } from "../../components/theme-toggle";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", enabled: true },
   { href: "/dashboard/projects", label: "Projects", enabled: true },
-  { href: "/dashboard/deployments", label: "Deployments", enabled: false },
-  { href: "/dashboard/settings", label: "Settings", enabled: false },
+  { href: "/dashboard/deployments", label: "Deployments", enabled: true },
+  { href: "/dashboard/settings", label: "Settings", enabled: true },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
