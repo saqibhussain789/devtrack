@@ -10,8 +10,8 @@
     "test": "turbo run test"
   },
   "devDependencies": {
-    "prettier": "^3.9.5",
-    "turbo": "^2.10.5",
+    "prettier": "^3.9.6",
+    "turbo": "^2.10.8",
     "typescript": "7.0.2"
   },
   "engines": {
